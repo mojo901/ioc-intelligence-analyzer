@@ -8,25 +8,20 @@ from tabulate import tabulate
 import time
 import json
 
-# Загружаем переменные окружения из файла .env
 load_dotenv()
 
-# Получаем API-ключ из переменных окружения
 VT_API_KEY = os.getenv('VT_API_KEY')
 # Base URL для VirusTotal API v3
 VT_API_URL = 'https://www.virustotal.com/api/v3'
 
 def classify_ioc(ioc):
-    """Определяет тип IOC на основе регулярных выражений."""
     ioc = ioc.strip().lower()
     
-    # Регулярные выражения для определения типов IOC
     ipv4_pattern = r'^\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}$'
     md5_pattern = r'^[a-f0-9]{32}$'
     sha1_pattern = r'^[a-f0-9]{40}$'
     sha256_pattern = r'^[a-f0-9]{64}$'
     
-    # Проверяем соответствие паттернам
     if re.match(ipv4_pattern, ioc):
         octets = ioc.split('.')
         if all(0 <= int(octet) <= 255 for octet in octets):
@@ -43,7 +38,6 @@ def classify_ioc(ioc):
     return 'unknown'
 
 def make_vt_request(url_suffix):
-    """Выполняет запрос к VirusTotal API с обработкой ошибок и лимитов."""
     url = f'{VT_API_URL}/{url_suffix}'
     headers = {'x-apikey': VT_API_KEY}
     
@@ -66,7 +60,6 @@ def make_vt_request(url_suffix):
         return None
 
 def check_ioc_virustotal(ioc, ioc_type):
-    """Проверяет IOC через VirusTotal API."""
     endpoints = {
         'ipv4': f'ip_addresses/{ioc}',
         'domain': f'domains/{ioc}',
@@ -97,7 +90,6 @@ def check_ioc_virustotal(ioc, ioc_type):
     }
 
 def read_iocs_from_file(file_path):
-    """Читает IOC из файла, пропускает пустые строки и комментарии."""
     iocs = []
     try:
         with open(file_path, 'r', encoding='utf-8') as file:
@@ -114,7 +106,6 @@ def read_iocs_from_file(file_path):
         return []
 
 def save_to_csv(results, filename):
-    """Сохраняет результаты анализа в CSV файл."""
     if not results:
         print("Нет данных для сохранения в CSV")
         return False
@@ -136,7 +127,6 @@ def save_to_csv(results, filename):
         return False
 
 def main():
-    """Основная функция программы."""
     parser = argparse.ArgumentParser(
         description='IOC Intelligence Analyzer - Проверка показателей компрометации через VirusTotal',
         formatter_class=argparse.RawDescriptionHelpFormatter,
@@ -226,7 +216,6 @@ def main():
         headers = ['IOC', 'Type', 'Malicious', 'Suspicious', 'Total Engines', 'Reputation', 'Status']
         print(tabulate(table_data, headers=headers, tablefmt='grid'))
         
-        # Сохраняем в CSV если указан аргумент -o
         if args.output:
             save_to_csv(results, args.output)
         
@@ -244,4 +233,5 @@ def main():
             print(f"  - {ioc}")
 
 if __name__ == "__main__":
+
     main()
